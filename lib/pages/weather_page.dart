@@ -3,6 +3,31 @@ import 'package:lottie/lottie.dart';
 import 'package:weathercyp/models/weather_model.dart';
 import 'package:weathercyp/services/weather_service.dart';
 
+class SearchBar extends StatelessWidget {
+  final MaterialStateProperty<Color?>? shadowColor;
+
+  const SearchBar({Key? key, this.shadowColor}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color:
+                shadowColor?.resolve(<MaterialState>{}) ?? Colors.transparent,
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: TextField(
+          // Your TextField properties
+          ),
+    );
+  }
+}
+
 class WeatherPage extends StatefulWidget {
   const WeatherPage({Key? key}) : super(key: key);
 
@@ -12,7 +37,6 @@ class WeatherPage extends StatefulWidget {
 
 class _WeatherState extends State<WeatherPage> {
   final _weatherService = WeatherService('4722cf98df244fd69cb180229255a46e');
-  Weather? _weather;
 
   Future<Weather?> _fetchWeather() async {
     String cityName = await _weatherService.getCurrentCity();
@@ -25,10 +49,11 @@ class _WeatherState extends State<WeatherPage> {
       return null;
     }
   }
-  String getWeatherAnimation(String? mainCondition){
-    if(mainCondition == null) return 'assets/sunny.json';
 
-    switch(mainCondition.toLowerCase()){
+  String getWeatherAnimation(String? mainCondition) {
+    if (mainCondition == null) return 'assets/sunny.json';
+
+    switch (mainCondition.toLowerCase()) {
       case 'clouds':
         return "assets/cloudy.json";
       case 'mist':
@@ -53,10 +78,11 @@ class _WeatherState extends State<WeatherPage> {
         return 'assets/sunny.json';
     }
   }
-  String getWeatherCondition(String? mainCondition){
-    if(mainCondition == null) return 'assets/sunny.json';
 
-    switch(mainCondition.toLowerCase()){
+  String getWeatherCondition(String? mainCondition) {
+    if (mainCondition == null) return 'Clear';
+
+    switch (mainCondition.toLowerCase()) {
       case 'clouds':
         return "Cloudy";
       case 'mist':
@@ -83,39 +109,92 @@ class _WeatherState extends State<WeatherPage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: FutureBuilder(
-          future: _fetchWeather(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
-            } else if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}');
-            } else {
-              final weather = snapshot.data as Weather?;
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(weather?.cityName ?? "loading city",
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 30.0)),
-                  Lottie.asset(getWeatherAnimation(weather?.mainCondition.toLowerCase())),
-                  Text(getWeatherCondition(weather?.mainCondition.toLowerCase() ?? "Loading Weather Condition"),
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
-                  Text('${weather?.temperature.toString()}°C',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0)),
-
-
-                ],
-              );
-            }
-          },
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.blue.shade100,
+        // Set background color to transparent
+        onPressed: () {
+          // Add your action when the button is pressed
+          print('Floating Action Button Pressed!');
+        },
+        child: Icon(
+            Icons.search), // You can change the icon based on your requirements
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.blue.shade100,
+              Colors.blue.shade200,
+              Colors.blue.shade300,
+              Colors.blue.shade500,
+              Colors.blue.shade800,
+            ],
+          ),
+        ),
+        child: Center(
+          child: FutureBuilder(
+            future: _fetchWeather(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else {
+                final weather = snapshot.data as Weather?;
+                return Padding(
+                  padding: EdgeInsets.only(top: 100, left: 20, right: 20),
+                  child: Column(
+                    children: [
+                      // SearchBar(
+                      //   shadowColor: MaterialStateProperty.resolveWith(
+                      //     (states) {
+                      //       if (states.contains(MaterialState.pressed)) {
+                      //         return Colors
+                      //             .blue.shade800; // Change color when pressed
+                      //       } else {
+                      //         return Colors.transparent; // Default color
+                      //       }
+                      //     },
+                      //   ),
+                      // ),
+                      SizedBox(height: 20),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${weather?.temperature.toString()}°',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 80.0),
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            weather?.cityName ?? "loading city",
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 30.0),
+                          ),
+                          Lottie.asset(getWeatherAnimation(
+                              weather?.mainCondition.toLowerCase())),
+                          Text(
+                            getWeatherCondition(
+                                weather?.mainCondition.toLowerCase() ??
+                                    "Loading Weather Condition"),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 20.0),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 30,),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
         ),
       ),
     );
